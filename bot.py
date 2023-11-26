@@ -9,11 +9,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
+CMC_API_KEY = os.getenv('CMC_API_KEY')
 base_url = 'https://api.coingecko.com/api/v3/coins/'
+cmc_url = 'https://pro-api.coinmarketcap.com/v2/cryptocurrency/info'
+headers = {
+    'Accepts': 'application/json',
+    'X-CMC_PRO_API_KEY': CMC_API_KEY
+}
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 @client.event
 async def on_ready():
@@ -24,7 +30,7 @@ async def on_message(message):
     print(message.content)
     if message.author == client.user:
         return
-    if 'cfaq' in message.content:
+    if 'cfaq' in message.content and 'cfaq $' not in message.content:
         token = message.content.split('cfaq ')[1]
         res = requests.get(base_url + token)
         response = json.loads(res.text)
@@ -55,5 +61,34 @@ async def on_message(message):
             {desc}
         """
         await message.channel.send(info[0:1999])
+    elif 'cfaq $' in message.content:
+        symbol = message.content.split('cfaq $')[1]
+        parameters = {
+            'symbol': symbol
+        }
+        session = requests.Session()
+        session.headers.update(headers)
+        try:
+            response = session.get(cmc_url, params=parameters)
+            data = json.loads(response.text)
+            print(symbol)
+            print(data['data'][symbol.upper()][0])
+            id = data['data'][symbol.upper()][0]['name']
+            ticker = data['data'][symbol.upper()][0]['symbol']
+            # price = response["market_data"]["current_price"]["usd"]
+            # mcap = response["market_data"]["market_cap"]["usd"]
+            # mcap_rank = response["market_data"]["market_cap_rank"]
+            # fdv = response["market_data"]["fully_diluted_valuation"]["usd"]
+            # vol = response["market_data"]["total_volume"]["usd"]
+            desc = data['data'][symbol.upper()][0]['description']
+            info = f"""
+                ## {id} ({ticker})
+                
+                ### Description:
+                {desc}
+            """
+            await message.channel.send(info[0:1999])
+        except:
+            print('Error fetching CMC data')
 
 client.run(TOKEN)
