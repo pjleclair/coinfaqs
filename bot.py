@@ -28,13 +28,18 @@ async def on_message(message):
         token = message.content.split('cfaq ')[1]
         res = requests.get(base_url + token)
         response = json.loads(res.text)
+        id = response["name"]
+        ticker = response["symbol"]
         price = response["market_data"]["current_price"]["usd"]
         mcap = response["market_data"]["market_cap"]["usd"]
         mcap_rank = response["market_data"]["market_cap_rank"]
         fdv = response["market_data"]["fully_diluted_valuation"]["usd"]
         vol = response["market_data"]["total_volume"]["usd"]
         desc = response['description']['en']
-        info = f"""### Market Stats:
+        info = f"""
+            ## {id} ({ticker.upper()})
+            
+            ### Market Stats:
             **Current Price:**
                 {locale.currency(price, grouping=True)}
             **Market Cap Rank:**
