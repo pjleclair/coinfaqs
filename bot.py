@@ -30,8 +30,8 @@ async def on_message(message):
     print(message.content)
     if message.author == client.user:
         return
-    if 'cfaq' in message.content and 'cfaq $' not in message.content:
-        token = message.content.split('cfaq ')[1]
+    if 'cfaq' in message.content.lower() and 'cfaq $' not in message.content.lower():
+        token = message.content.lower().split('cfaq ')[1]
         res = requests.get(base_url + token)
         response = json.loads(res.text)
         id = response["name"]
@@ -61,8 +61,8 @@ async def on_message(message):
             {desc}
         """
         await message.channel.send(info[0:1999])
-    elif 'cfaq $' in message.content:
-        symbol = message.content.split('cfaq $')[1]
+    elif 'cfaq $' in message.content.lower():
+        symbol = message.content.lower().split('cfaq $')[1]
         parameters = {
             'symbol': symbol
         }
